@@ -1,0 +1,85 @@
+/*
+    calcgrid mixin allows to calculate width based on columns and gutters count
+
+    Parameters:
+    @property          - [CSS property] CSS property for which we need to calculate width
+    @columns           - [number] how many columns should block take (gutters in-between are included automatically)
+    @total-columns     - how many columns in the parent of this block
+    @last-gutter       - [0/1] do we need to append gutter to the block width
+    @total-last-gutter - [0/1] is there gutter appended to parent block
+    @has-padding       - [0/1] should this block include half of outer padding
+    @total-padding     - [0/1] do we need to accound for outer padding (needed only for grid first level of nesting)
+*/
+.calcgrid(@property: "width"; @columns: 0; @total-columns: 12; @has-last-gutter: 0; @total-last-gutter: 0; @has-padding: 0; @total-padding: 0) {
+  @gutter: 48px;
+
+  // We need to calculate width of all fixed elements, so we can we subtract them
+  // from percentage width and be able to calculate percentage size of columns
+  @all-fixed-sizes: (@total-columns - 1) * @gutter - @total-last-gutter *
+    @gutter - @total-padding * @gutter;
+
+  // We calculate all fixed sizes to later add them to total width
+  @all-gutters: (@columns - 1) * @gutter + @has-last-gutter * @gutter;
+
+  @{property}: calc(
+     (100% - @all-fixed-sizes) / @total-columns * @columns + @all-gutters +
+      @has-padding * @gutter / 2
+  );
+}
+
+body {
+  margin: 0;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+h1 {
+  margin-top: 30px;
+  margin-left: 15px;
+  font-size: 32px;
+  font-weight: bold;
+}
+
+h2 {
+  margin-top: 15px;
+  margin-bottom: 10px;
+  margin-left: 15px;
+
+  font-size: 16px;
+}
+
+.grid {
+  position: relative;
+
+  &:after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0 24px;
+    pointer-events: none;
+
+    background: repeating-linear-gradient(
+      90deg,
+      rgba(0, 233, 23, 0.2),
+      rgba(0, 233, 23, 0.2) 5%,
+      transparent 5%,
+      transparent ~"calc(5% + 48px)";
+    );
+  }
+}
+
+.grid1 {
+  display: flex;
+  padding: 0 24px;
+
+  &-block1 {
+    .calcgrid(@columns: 3; @total-columns: 12);
+    background: blue;
+  }
+
+  &-block2 {
+    background: red;
+  }
+}
